@@ -1,6 +1,10 @@
+import processing.net.*;
+import javax.swing.*;
+
 //-------------------image variable-------------------//
 
 PImage img;
+String ip;
 
 
 //--------------------game variable--------------------------//
@@ -9,24 +13,57 @@ String[] screen_bd = new String[12];
 String[] screen_p1 = new String[6];
 String[] screen_p2 = new String[6];
 GAME game;
-int turn;
+int turn, myturn;
 
+//--------------------server variable------------------------//
+//Server myServer;
+Client myClient;
 
 //-----------------main loop-----------------------------------//
 
 void setup() {
   size(486, 665);
+  
+  
+  //myServer = new Server(this, 5204);
+  ip = JOptionPane.showInputDialog("ip Address : ");
+  println("IP : " + ip);
+  myClient = new Client(this, ip, 5204);
+  
+  myturn = GAME.PLAYER2;
+  
   game = new GAME();
   turn = GAME.PLAYER1;
   game.set_turn(turn);
   refresh();
-  screenReload();
 }
 
+  
 void draw() {
+  if(myClient.available() > 0) {
+    String msg = myClient.readString();
+    String[] token = msg.split(" ");
+    int cmd = Integer.parseInt(token[0]);
+    if(cmd == 0) {
+      button_yx(Integer.parseInt(token[1]), Integer.parseInt(token[2]));
+    }
+    else if(cmd == 1) {
+      button_player1(Integer.parseInt(token[1]));
+    }
+    else if(cmd == 2) {
+      button_player2(Integer.parseInt(token[1]));
+    }
+    refresh();
+    println(msg);
+  }
+}
+
+void sendData(String msg) {
+  myClient.write(msg);
 }
 
 void mouseClicked() {
+  if(myturn != turn) return;
   int mx = mouseX, my = mouseY;
   for(int i=0; i<4; i++) {
     for(int j=0; j<3; j++) {
@@ -34,6 +71,7 @@ void mouseClicked() {
       
       if(x <= mx && mx <= x + sz && y <= my && my <= y + sz) {
           button_yx(i, j);
+          sendData("0 " + i + " " + j);
       }
     }
   }
@@ -42,6 +80,7 @@ void mouseClicked() {
     
     if(x <= mx && mx <= x + sz && y <= my && my <= y + sz) {
         button_player1(i);
+        sendData("1 " + i);
     }
   }
   for(int i=0; i<6; i++) {
@@ -49,6 +88,7 @@ void mouseClicked() {
     
     if(x <= mx && mx <= x + sz && y <= my && my <= y + sz) {
         button_player2(i);
+        sendData("2 " + i);
     }
   }
   
@@ -74,14 +114,22 @@ void button_yx(int y, int x) {
         game.set_turn(turn);
     }
     if(game.state == GAME.PLAYER1) {
+        JOptionPane.showMessageDialog(null, "플레이어 1 승리", "Winner", JOptionPane.PLAIN_MESSAGE);
         println("플레이어 1 승리");
         game.init_game();
         turn = GAME.PLAYER1;
+        
+        if(myturn == GAME.PLAYER1) myturn = GAME.PLAYER2;
+        else myturn = GAME.PLAYER1;
     }
     else if(game.state == GAME.PLAYER2) {
+      JOptionPane.showMessageDialog(null, "플레이어 2 승리", "Winner", JOptionPane.PLAIN_MESSAGE);
         println("플레이어 2 승리");
         game.init_game();
         turn = GAME.PLAYER1;
+        
+        if(myturn == GAME.PLAYER1) myturn = GAME.PLAYER2;
+        else myturn = GAME.PLAYER1;
     }
 }
 
@@ -123,6 +171,7 @@ void refresh() {
             screen_bd[i * 3 + j] = "images/" + mal_str(bd[i][j]) + ".png";
         }
     }
+    screenReload();
 }
 
 String mal_str(MAL mal) {
