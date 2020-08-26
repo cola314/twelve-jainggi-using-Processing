@@ -27,11 +27,12 @@ void draw() {
 }
 
 void mouseClicked() {
+  int mx = mouseX, my = mouseY;
   for(int i=0; i<4; i++) {
     for(int j=0; j<3; j++) {
       int x = 67 + 117 * j, y = 105 + 117 * i, sz = 111;
       
-      if(x <= mouseX && mouseX <= x + sz && y <= mouseY && mouseY <= y + sz) {
+      if(x <= mx && mx <= x + sz && y <= my && my <= y + sz) {
           button_yx(i, j);
       }
     }
@@ -39,14 +40,14 @@ void mouseClicked() {
   for(int i=0; i<6; i++) {
     int x = 55 + 63 * i, y = 105 + 117 * 4 + 10, sz = 58;
     
-    if(x <= mouseX && mouseX <= x + sz && y <= mouseY && mouseY <= y + sz) {
+    if(x <= mx && mx <= x + sz && y <= my && my <= y + sz) {
         button_player1(i);
     }
   }
   for(int i=0; i<6; i++) {
     int x = 55 + 63 * i, y = 105 - 58 - 10, sz = 58;
     
-    if(x <= mouseX && mouseX <= x + sz && y <= mouseY && mouseY <= y + sz) {
+    if(x <= mx && mx <= x + sz && y <= my && my <= y + sz) {
         button_player2(i);
     }
   }
